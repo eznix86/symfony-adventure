@@ -58,16 +58,16 @@ $outcome = battle($ship1, $ship1Quantity, $ship2, $ship2Quantity);
                 <h2 class="text-center">The Matchup:</h2>
                 <p class="text-center">
                     <br>
-                    <?php echo $ship1Quantity; ?> <?php echo $ship1['name']; ?><?php echo $ship1Quantity > 1 ? 's': ''; ?>
+                    <?php echo $ship1Quantity; ?> <?php echo $ship1->getName(); ?><?php echo $ship1Quantity > 1 ? 's': ''; ?>
                     VS.
-                    <?php echo $ship2Quantity; ?> <?php echo $ship2['name']; ?><?php echo $ship2Quantity > 1 ? 's': ''; ?>
+                    <?php echo $ship2Quantity; ?> <?php echo $ship2->getName(); ?><?php echo $ship2Quantity > 1 ? 's': ''; ?>
                 </p>
             </div>
             <div class="result-box center-block">
                 <h3 class="text-center audiowide">
                     Winner:
                     <?php if ($outcome['winning_ship']): ?>
-                        <?php echo $outcome['winning_ship']['name']; ?>
+                        <?php echo $outcome['winning_ship']->getName(); ?>
                     <?php else: ?>
                         Nobody
                     <?php endif; ?>
@@ -76,11 +76,11 @@ $outcome = battle($ship1, $ship1Quantity, $ship2, $ship2Quantity);
                     <?php if ($outcome['winning_ship'] == null): ?>
                         Both ships destroyed each other in an epic battle to the end.
                     <?php else: ?>
-                        The <?php echo $outcome['winning_ship']['name']; ?>
+                        The <?php echo $outcome['winning_ship']->getName(); ?>
                         <?php if ($outcome['used_jedi_powers']): ?>
                             used its Jedi Powers for a stunning victory!
                         <?php else: ?>
-                            overpowered and destroyed the <?php echo $outcome['losing_ship']['name'] ?>s
+                            overpowered and destroyed the <?php echo $outcome['losing_ship']->getName() ?>s
                         <?php endif; ?>
                     <?php endif; ?>
                 </p>
