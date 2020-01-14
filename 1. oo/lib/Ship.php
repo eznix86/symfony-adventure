@@ -9,6 +9,13 @@ class Ship
 
     private $strength = 0;
 
+    private $underRepair;
+
+    public function __construct($name) {
+        $this->name = $name;
+        $this->underRepair = mt_rand(1, 100) < 30;
+    }
+
     public function sayHello() {
         echo 'HELLO';
     }
@@ -98,5 +105,13 @@ class Ship
     public function setJediFactor($jediFactor)
     {
         $this->jediFactor = $jediFactor;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isFunctional()
+    {
+        return !$this->underRepair;
     }
 }
