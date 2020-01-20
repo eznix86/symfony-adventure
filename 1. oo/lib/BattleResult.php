@@ -5,7 +5,7 @@ class BattleResult {
     private $winningShip;
     private $losingShip;
 
-    public function __construct($usedJediPower, Ship $winningShip, Ship $losingShip)
+    public function __construct($usedJediPower, Ship $winningShip = null, Ship $losingShip = null)
     {
         $this->usedJediPower =$usedJediPower;
         $this->winningShip = $winningShip;
@@ -29,7 +29,7 @@ class BattleResult {
     }
 
     /**
-     * @return Ship
+     * @return Ship|null
      */
     public function getWinningShip()
     {
@@ -45,7 +45,7 @@ class BattleResult {
     }
 
     /**
-     * @return Ship
+     * @return Ship|null
      */
     public function getLosingShip()
     {
@@ -58,5 +58,9 @@ class BattleResult {
     public function setLosingShip($losingShip)
     {
         $this->losingShip = $losingShip;
+    }
+
+    public function isThereAWinner() {
+        return $this->getWinningShip() !== null;
     }
 }
