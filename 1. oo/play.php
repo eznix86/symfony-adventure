@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/lib/Ship.php';
+require_once __DIR__ . '/lib/Ship.php';
 
 function printShipSummary($someShip) {
     echo "Ship name: ".$someShip->name;
