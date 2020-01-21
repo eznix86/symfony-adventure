@@ -10,6 +10,7 @@ class BattleManager {
      * @param Ship $ship2
      * @param $ship2Quantity
      * @return BattleResult
+     * @throws Exception
      */
     public function battle(Ship &$ship1, $ship1Quantity, Ship &$ship2, $ship2Quantity)
     {
