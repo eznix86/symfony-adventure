@@ -1,6 +1,8 @@
 <?php
 class Ship
 {
+    private $id;
+
     private $name;
 
     private $weaponPower = 0;
@@ -11,15 +13,35 @@ class Ship
 
     private $underRepair;
 
-    public function __construct($name) {
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function __construct($name)
+    {
         $this->name = $name;
         $this->underRepair = mt_rand(1, 100) < 30;
     }
 
-    public function sayHello() {
+    public function sayHello()
+    {
         echo 'HELLO';
     }
-    public function getName() {
+
+    public function getName()
+    {
         return $this->name;
     }
 
