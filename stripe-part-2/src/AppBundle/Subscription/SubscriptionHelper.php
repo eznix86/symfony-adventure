@@ -55,4 +55,20 @@ class SubscriptionHelper
         $this->em->persist($subscription);
         $this->em->flush($subscription);
     }
+
+    /**
+     * @param User $user
+     * @param \Stripe\Customer $stripeCustomer
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function updateCardDetails(User $user, \Stripe\Customer $stripeCustomer){
+        $cardDetails = $stripeCustomer->sources->data[0];
+
+        $user->setCardBrand($cardDetails->brand);
+        $user->setCardLast4($cardDetails->last4);
+
+        $this->em->persist($user);
+        $this->em->flush($user);
+    }
 }

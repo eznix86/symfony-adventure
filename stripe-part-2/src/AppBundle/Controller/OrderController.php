@@ -89,13 +89,18 @@ class OrderController extends BaseController
     {
         /** @var StripeClient $stripeClient */
         $stripeClient = $this->get('stripe_client');
+        /** @var SubscriptionHelper $subcriptionHelper */
+        $subcriptionHelper = $this->get('subscription_helper');
+
         /** @var User $user */
         $user = $this->getUser();
         if (!$user->getStripeCustomerId()) {
-            $stripeClient->createCustomer($user, $token);
+            $stripeCustomer = $stripeClient->createCustomer($user, $token);
         } else {
-            $stripeClient->updateCustomerCard($user, $token);
+            $stripeCustomer = $stripeClient->updateCustomerCard($user, $token);
         }
+
+        $subcriptionHelper->updateCardDetails($user, $stripeCustomer);
 
         /** @var ShoppingCart $cart */
         $cart = $this->get('shopping_cart');
@@ -113,8 +118,7 @@ class OrderController extends BaseController
                 $user,
                 $cart->getSubscriptionPlan()
             );
-            /** @var SubscriptionHelper $subcriptionHelper */
-            $subcriptionHelper = $this->get('subscription_helper');
+
             $subcriptionHelper->addSubscriptionToUser($subscription, $user);
         } else {
             $stripeClient->createInvoice($user, true);

@@ -38,6 +38,8 @@ class StripeClient
 
         $customer->source = $paymentToken;
         $customer->save();
+
+        return $customer;
     }
 
     public function createInvoiceItem($amount, User $user, $description)
