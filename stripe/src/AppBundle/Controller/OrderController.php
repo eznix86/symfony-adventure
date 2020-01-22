@@ -36,7 +36,7 @@ class OrderController extends BaseController
     }
 
     /**
-     * @Route("/checkout", name="order_checkout")
+     * @Route("/checkout", name="order_checkout", schemes={"%secure_channel%"})
      * @Security("is_granted('ROLE_USER')")
      * @param Request $request
      * @return Response
