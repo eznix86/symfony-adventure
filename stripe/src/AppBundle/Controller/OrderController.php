@@ -10,6 +10,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Stripe\Charge;
 use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Invoice;
+use Stripe\InvoiceItem;
 use Stripe\Stripe;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,13 +65,29 @@ class OrderController extends BaseController
                 $customer->save();
             }
 
-            $user = $this->getUser();
-            $charge = Charge::create([
-                'amount' => $this->get('shopping_cart')->getTotal() * 100,
-                'currency' => 'usd',
+            foreach ($this->get('shopping_cart')->getProducts() as $product) {
+                InvoiceItem::create([
+                    'amount' => $product->getPrice() * 100,
+                    'currency' => 'usd',
+                    'customer' => $user->getStripeCustomerId(),
+                    'description' => $product->getName(),
+                ]);
+            }
+
+            $invoice = Invoice::create([
                 'customer' => $user->getStripeCustomerId(),
-                'description' => 'first test checkout ',
             ]);
+
+            //Invoices CHARGE NOW
+            $invoice->pay();
+            //CHARGE THE USER 1h later
+//            $user = $this->getUser();
+//            $charge = Charge::create([
+//                'amount' => $this->get('shopping_cart')->getTotal() * 100,
+//                'currency' => 'usd',
+//                'customer' => $user->getStripeCustomerId(),
+//                'description' => 'first test checkout ',
+//            ]);
             $this->get('shopping_cart')->emptyCart();
             $this->addFlash('success', 'Order Complete! Yay!');
             return $this->redirectToRoute('homepage');
