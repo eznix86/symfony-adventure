@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
 use AppBundle\Entity\User;
+use AppBundle\Subscription\SubscriptionHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -30,7 +31,17 @@ class OrderController extends BaseController
      */
     public function addSubscriptionToCartAction($planId)
     {
-        // todo - add the subscription plan to the cart!
+        /** @var SubscriptionHelper $subcriptionHelper */
+        $subcriptionHelper = $this->get('subscription_helper');
+        $plan = $subcriptionHelper->findPlan($planId);
+
+        if (!$plan){
+           throw $this->createNotFoundException("Bad Plan id!");
+        }
+
+        $this->get('shopping_cart')->addSubscription($planId);
+
+        return $this->redirectToRoute('order_checkout');
     }
 
     /**
