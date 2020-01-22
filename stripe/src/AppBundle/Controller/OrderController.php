@@ -13,6 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Stripe\Charge;
 use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\CardException;
 use Stripe\Invoice;
 use Stripe\InvoiceItem;
 use Stripe\Stripe;
@@ -47,48 +48,63 @@ class OrderController extends BaseController
     public function checkoutAction(Request $request)
     {
         $products = $this->get('shopping_cart')->getProducts();
+
+        $error = false;
         if ($request->isMethod('POST')) {
             $token = $request->get('stripeToken');
-            /** @var User $user */
-            $user = $this->getUser();
-            /** @var StripeClient $stripeClient */
-            $stripeClient = $this->get('stripe_client');
-            if($user->getStripeCustomerId() === null) {
-                $stripeClient->createCustomer($user, $token);
-            } else {
-                $stripeClient->updateCustomerCard($user, $token);
 
-            }
-            /** @var Product $product */
-            foreach ($this->get('shopping_cart')->getProducts() as $product) {
-                $stripeClient->createInvoiceItem(
-                    $product->getPrice() * 100,
-                    $user,
-                    $product->getName()
-                );
+            try {
+
+                $this->chargeCustomer($token);
+            } catch (CardException $e) {
+                $error = 'There was an error charging your card '. $e->getMessage();
             }
 
-            $stripeClient->createInvoice($user, true);
+            if (!$error) {
+                $this->get('shopping_cart')->emptyCart();
+                $this->addFlash('success', 'Order Complete! Yay!');
 
-            //CHARGE THE USER 1h later
-//            $user = $this->getUser();
-//            $charge = Charge::create([
-//                'amount' => $this->get('shopping_cart')->getTotal() * 100,
-//                'currency' => 'usd',
-//                'customer' => $user->getStripeCustomerId(),
-//                'description' => 'first test checkout ',
-//            ]);
-            $this->get('shopping_cart')->emptyCart();
-            $this->addFlash('success', 'Order Complete! Yay!');
-            return $this->redirectToRoute('homepage');
+                return $this->redirectToRoute('homepage');
+            }
 
         }
 
         return $this->render('order/checkout.html.twig', array(
             'products' => $products,
             'cart' => $this->get('shopping_cart'),
-            'stripe_public_key' => $this->getParameter('stripe_public_key')
+            'stripe_public_key' => $this->getParameter('stripe_public_key'),
+            'error' => $error
         ));
 
+    }
+
+    /**
+     * @param $token
+     * @throws ApiErrorException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function chargeCustomer($token)
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        /** @var StripeClient $stripeClient */
+        $stripeClient = $this->get('stripe_client');
+        if ($user->getStripeCustomerId() === null) {
+            $stripeClient->createCustomer($user, $token);
+        } else {
+            $stripeClient->updateCustomerCard($user, $token);
+
+        }
+        /** @var Product $product */
+        foreach ($this->get('shopping_cart')->getProducts() as $product) {
+            $stripeClient->createInvoiceItem(
+                $product->getPrice() * 100,
+                $user,
+                $product->getName()
+            );
+        }
+
+        $stripeClient->createInvoice($user, true);
     }
 }
