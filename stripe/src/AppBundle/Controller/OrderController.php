@@ -4,6 +4,9 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
 use AppBundle\Entity\User;
+use AppBundle\StripeClient;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -38,48 +41,35 @@ class OrderController extends BaseController
      * @param Request $request
      * @return Response
      * @throws ApiErrorException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function checkoutAction(Request $request)
     {
         $products = $this->get('shopping_cart')->getProducts();
         if ($request->isMethod('POST')) {
             $token = $request->get('stripeToken');
-            Stripe::setApiKey($this->getParameter('stripe_secret_key'));
             /** @var User $user */
             $user = $this->getUser();
+            /** @var StripeClient $stripeClient */
+            $stripeClient = $this->get('stripe_client');
             if($user->getStripeCustomerId() === null) {
-                $customer = Customer::create([
-                    'source' => $token,
-                    'email' => $user->getEmail(),
-                    'description' => 'Customer test@test.com'
-                ]);
-
-                $user->setStripeCustomerId($customer->id);
-                $em = $this->getDoctrine()->getManager();
-
-                $em->persist($user);
-                $em->flush();
+                $stripeClient->createCustomer($user, $token);
             } else {
-                $customer = Customer::retrieve($user->getStripeCustomerId());
-                $customer->source = $token;
-                $customer->save();
-            }
+                $stripeClient->updateCustomerCard($user, $token);
 
+            }
+            /** @var Product $product */
             foreach ($this->get('shopping_cart')->getProducts() as $product) {
-                InvoiceItem::create([
-                    'amount' => $product->getPrice() * 100,
-                    'currency' => 'usd',
-                    'customer' => $user->getStripeCustomerId(),
-                    'description' => $product->getName(),
-                ]);
+                $stripeClient->createInvoiceItem(
+                    $product->getPrice() * 100,
+                    $user,
+                    $product->getName()
+                );
             }
 
-            $invoice = Invoice::create([
-                'customer' => $user->getStripeCustomerId(),
-            ]);
+            $stripeClient->createInvoice($user, true);
 
-            //Invoices CHARGE NOW
-            $invoice->pay();
             //CHARGE THE USER 1h later
 //            $user = $this->getUser();
 //            $charge = Charge::create([
