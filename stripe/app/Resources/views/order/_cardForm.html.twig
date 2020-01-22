@@ -1,6 +1,6 @@
 <form action="" method="POST" class="js-checkout-form checkout-form">
     <div class="row">
-        <div class="col-xs-8 col-sm-6 col-sm-offset-2 form-group">
+        <div class="col-xs-8 col-sm-12 form-group">
             <div class="input-group">
                 <span class="input-group-addon">
                      <i class="fa fa-user"></i>
@@ -11,7 +11,7 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-8 col-sm-6 col-sm-offset-2 form-group">
+        <div class="col-xs-8 col-sm-12 form-group">
             <div class="input-group">
                 <span class="input-group-addon">
                      <i class="fa fa-credit-card"></i>
@@ -22,7 +22,7 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-4 col-sm-3 col-sm-offset-2 form-group">
+        <div class="col-xs-4 col-sm-6 form-group">
             <div class="input-group">
                 <span class="input-group-addon">
                      <i class="fa fa-calendar-o"></i>
@@ -30,7 +30,7 @@
                 <input data-stripe="exp" type="text" size="4" autocomplete="off" class="form-control js-cc-exp" id="card-expiration" required="required" placeholder="mm/yy"/>
             </div>
         </div>
-        <div class="col-xs-4 col-sm-3 form-group">
+        <div class="col-xs-4 col-sm-6 form-group">
             <div class="input-group">
                 <span class="input-group-addon">
                      <i class="fa fa-lock"></i>
@@ -41,7 +41,7 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-8 col-sm-3 col-sm-offset-2 form-group">
+        <div class="col-xs-8 col-sm-6 form-group">
             <div class="input-group">
                 <span class="input-group-addon">
                      <i class="fa fa-map-marker"></i>
@@ -52,13 +52,13 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-8 col-sm-6 col-sm-offset-2 text-center">
-            <div class="alert alert-danger js-checkout-error hidden"></div>
+        <div class="col-xs-8 col-sm-12 text-center">
+            <div class="alert alert-danger js-checkout-error {{ error ? '': 'hidden' }}">{{ error }}</div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-xs-8 col-sm-6 col-sm-offset-2 text-center">
+        <div class="col-xs-8 col-sm-6 text-center">
             <button type="submit" class="js-submit-button btn btn-lg btn-danger">
                 Checkout
             </button>
