@@ -3,10 +3,13 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
+use AppBundle\Entity\User;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Stripe\Charge;
+use Stripe\Customer;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +35,7 @@ class OrderController extends BaseController
      * @Security("is_granted('ROLE_USER')")
      * @param Request $request
      * @return Response
+     * @throws ApiErrorException
      */
     public function checkoutAction(Request $request)
     {
@@ -39,10 +43,31 @@ class OrderController extends BaseController
         if ($request->isMethod('POST')) {
             $token = $request->get('stripeToken');
             Stripe::setApiKey($this->getParameter('stripe_secret_key'));
+            /** @var User $user */
+            $user = $this->getUser();
+            if($user->getStripeCustomerId() === null) {
+                $customer = Customer::create([
+                    'source' => $token,
+                    'email' => $user->getEmail(),
+                    'description' => 'Customer test@test.com'
+                ]);
+
+                $user->setStripeCustomerId($customer->id);
+                $em = $this->getDoctrine()->getManager();
+
+                $em->persist($user);
+                $em->flush();
+            } else {
+                $customer = Customer::retrieve($user->getStripeCustomerId());
+                $customer->source = $token;
+                $customer->save();
+            }
+
+            $user = $this->getUser();
             $charge = Charge::create([
                 'amount' => $this->get('shopping_cart')->getTotal() * 100,
                 'currency' => 'usd',
-                'source' => $token,
+                'customer' => $user->getStripeCustomerId(),
                 'description' => 'first test checkout ',
             ]);
             $this->get('shopping_cart')->emptyCart();
