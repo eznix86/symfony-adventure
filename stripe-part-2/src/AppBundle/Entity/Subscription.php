@@ -91,4 +91,12 @@ class Subscription
     {
         return $this->billingPeriodEndsAt;
     }
+
+    public function activateSubscription($stripePlanId, $stripeSubscriptionId)
+    {
+        $this->stripePlanId = $stripePlanId;
+        $this->stripeSubscriptionId = $stripeSubscriptionId;
+        $this->endsAt = null;
+    }
+
 }
