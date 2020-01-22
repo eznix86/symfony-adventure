@@ -4,6 +4,8 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
 use AppBundle\Entity\User;
+use AppBundle\Store\ShoppingCart;
+use AppBundle\StripeClient;
 use AppBundle\Subscription\SubscriptionHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -85,6 +87,7 @@ class OrderController extends BaseController
      */
     private function chargeCustomer($token)
     {
+        /** @var StripeClient $stripeClient */
         $stripeClient = $this->get('stripe_client');
         /** @var User $user */
         $user = $this->getUser();
@@ -94,6 +97,7 @@ class OrderController extends BaseController
             $stripeClient->updateCustomerCard($user, $token);
         }
 
+        /** @var ShoppingCart $cart */
         $cart = $this->get('shopping_cart');
 
         foreach ($cart->getProducts() as $product) {
@@ -103,7 +107,15 @@ class OrderController extends BaseController
                 $product->getName()
             );
         }
-        $stripeClient->createInvoice($user, true);
+
+        if ($cart->getSubscriptionPlan()) {
+            $stripeClient->createSubscription(
+                $user,
+                $cart->getSubscriptionPlan()
+            );
+        } else {
+            $stripeClient->createInvoice($user, true);
+        }
     }
 }
 
