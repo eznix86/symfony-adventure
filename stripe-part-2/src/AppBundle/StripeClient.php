@@ -74,4 +74,19 @@ class StripeClient
 
         return $subscription;
     }
+
+    /**
+     * @param User $user
+     * @return \Stripe\Subscription
+     * @throws \Stripe\Exception\ApiErrorException
+     */
+    public function cancelSubscription(User $user) {
+        /** @var \Stripe\Subscription $subscription */
+        $subscription =  \Stripe\Subscription::update(
+            $user->getSubscription()->getStripeSubscriptionId(), [
+            array('cancel_at_period_end' => true)
+        ]);
+
+        return $subscription;
+    }
 }

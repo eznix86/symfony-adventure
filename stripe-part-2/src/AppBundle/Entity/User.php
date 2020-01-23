@@ -80,4 +80,14 @@ class User extends BaseUser
     {
         $this->cardLast4 = $cardLast4;
     }
+
+    public function hasActiveSubscription()
+    {
+        return $this->getSubscription() && $this->getSubscription()->isActive();
+    }
+
+    public function hasActiveNonCanceledSubscription()
+    {
+        return $this->hasActiveSubscription() && !$this->getSubscription()->isCanceled();
+    }
 }

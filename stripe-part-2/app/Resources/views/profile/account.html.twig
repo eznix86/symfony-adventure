@@ -4,8 +4,22 @@
 <div class="nav-space">
     <div class="container">
         <div class="row">
-            <div class="col-xs-12">
-                <h1>My Account</h1>
+            <div class="col-xs-6">
+                <h1>My Account
+
+                    {% if app.user.hasActiveSubscription %}
+                        {% if app.user.subscription.isCanceled %}
+                            {# TODO --reactivate button #}
+                        {% else %}
+                            <form action="{{ path('account_subscription_cancel') }}" method="post" class="pull-right">
+                                <button type="submit"  class="btn btn-danger btn-xs">
+                                    Cancel Subscription
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </h1>
+
             </div>
         </div>
 
@@ -16,8 +30,12 @@
                         <tr>
                             <th>Subscription</th>
                             <td>
-                                {% if app.user.subscription %}
+                                {% if app.user.hasActiveSubscription %}
+                                    {% if app.user.subscription.isCanceled %}
+                                    <span class="label label-warning">Canceled</span>
+                                    {% else %}
                                     <span class="label label-success">Active</span>
+                                    {% endif %}
                                 {% else %}
                                     <span class="label label-default">None</span>
                                 {% endif %}
@@ -26,7 +44,7 @@
                         <tr>
                             <th>Next Billing at:</th>
                             <td>
-                                {% if app.user.subscription %}
+                                {% if app.user.hasActiveNonCanceledSubscription %}
                                     {{ app.user.subscription.billingPeriodEndsAt|date('F jS') }}
                                 {% else %}
                                     n/a
@@ -36,7 +54,7 @@
                         <tr>
                             <th>Credit Card</th>
                             <td>
-                                {% if app.user.cardBrand %}
+                                {% if app.user.hasActiveNonCanceledSubscription %}
                                     {{ app.user.cardBrand }} ending in {{ app.user.cardLast4 }}
                                 {% else %}
                                     None
