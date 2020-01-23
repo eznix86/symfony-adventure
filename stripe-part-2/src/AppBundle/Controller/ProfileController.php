@@ -4,9 +4,11 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Subscription;
 use AppBundle\StripeClient;
+use AppBundle\Subscription\SubscriptionHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Stripe\Exception\ApiErrorException;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -46,5 +48,26 @@ class ProfileController extends BaseController
         return $this->redirectToRoute('profile_account');
     }
 
+    /**
+     * @Route("/profile/subscription/reactivate", name="account_subscription_reactivate")
+     * @Method({"POST"})
+     * @throws ApiErrorException
+     */
+    public function reactiveSubscriptionAction()
+    {
+        /** @var StripeClient $stripeClient */
+        $stripeClient = $this->get('stripe_client');
+
+        /** @var Subscription $subscription */
+        $subscription = $stripeClient->reactivateSubscription($this->getUser());
+
+        /** @var SubscriptionHelper $subscriptionHelper */
+        $subscriptionHelper = $this->get('subscription_helper');
+
+        $subscriptionHelper->addSubscriptionToUser($subscription, $this->getUser());
+
+        $this->addFlash('success', 'Welcome back!');
+        return $this->redirectToRoute('profile_account');
+    }
 
 }
