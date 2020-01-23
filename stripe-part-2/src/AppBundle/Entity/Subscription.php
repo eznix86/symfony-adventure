@@ -10,6 +10,15 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Subscription
 {
+
+    const UNABLE_TO_CHARGE_CARD = 'past_due';
+    const IS_ACTIVE = 'active';
+    const IN_TRIAL = 'trialing';
+    const FIRST_PAYMENT_FAILED = 'incomplete';
+    const FIRST_PAYMENT_EXPIRED = 'incomplete_expired';
+    const CANCELED = 'canceled';
+    const UNPAID = 'unpaid';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
@@ -106,6 +115,10 @@ class Subscription
         $this->billingPeriodEndsAt = null;
     }
 
+    public function cancel() {
+        $this->endsAt = new \DateTime();
+        $this->billingPeriodEndsAt = null;
+    }
 
     public function isActive() {
         return $this->endsAt === null || $this->endsAt > new \DateTime();

@@ -59,6 +59,10 @@
                             <td>
                                 {% if app.user.hasActiveNonCanceledSubscription %}
                                     {{ app.user.cardBrand }} ending in {{ app.user.cardLast4 }}
+
+                                    <button class="btn btn-xs btn-link pull-right js-open-credit-card-form">
+                                        Update Card
+                                    </button>
                                 {% else %}
                                     None
                                 {% endif %}
@@ -68,8 +72,10 @@
                 </table>
             </div>
             <div class="col-xs-6">
+                <div class="js-update-card-wrapper" style="display: none;">
+                    <h2>Update Credit Card</h2>
 
-            </div>
+                </div>
         </div>
     </div>
 </div>

@@ -32,12 +32,18 @@ class ProfileController extends BaseController
         /** @var StripeClient $stripeClient */
         $stripeClient = $this->get('stripe_client');
 
-        $stripeClient->cancelSubscription($this->getUser());
-
         /** @var Subscription $subscription */
         $subscription = $this->getUser()->getSubscription();
 
-        $subscription->deactivateSubscription();
+
+        $stripeSubscription = $stripeClient->cancelSubscription($this->getUser());
+
+        if ($stripeSubscription->status === Subscription::CANCELED) {
+            $subscription->cancel();
+        } else {
+            $subscription->deactivateSubscription();
+        }
+
 
         $em = $this->getDoctrine()->getManager();
         $em->persist($subscription);

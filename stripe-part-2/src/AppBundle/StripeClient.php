@@ -2,6 +2,7 @@
 
 namespace AppBundle;
 
+use AppBundle\Entity\Subscription;
 use AppBundle\Entity\User;
 use AppBundle\Subscription\SubscriptionPlan;
 use Doctrine\ORM\EntityManager;
@@ -88,6 +89,19 @@ class StripeClient
      */
     public function cancelSubscription(User $user, $cancel = true) {
         /** @var \Stripe\Subscription $subscription */
+
+        $subscription =  \Stripe\Subscription::retrieve(
+            $user->getSubscription()->getStripeSubscriptionId()
+        );
+
+        // https://stripe.com/docs/api/subscriptions/object#subscription_object-status
+        $currentPeriodEnd = new \DateTime('@'.$subscription->current_period_end);
+        // within 1 hour of the end? Cancel so the invoice isn't charged
+        if ($subscription->status === Subscription::UNABLE_TO_CHARGE_CARD || $currentPeriodEnd < new \DateTime('+1 hour')) {
+            $subscription->cancel();
+            return $subscription;
+        }
+
         $subscription =  \Stripe\Subscription::update(
             $user->getSubscription()->getStripeSubscriptionId(), [
             array('cancel_at_period_end' => $cancel)
