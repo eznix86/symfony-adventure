@@ -4,6 +4,9 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Product;
 use AppBundle\Entity\User;
+use AppBundle\Store\ShoppingCart;
+use AppBundle\StripeClient;
+use AppBundle\Subscription\SubscriptionHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -30,7 +33,17 @@ class OrderController extends BaseController
      */
     public function addSubscriptionToCartAction($planId)
     {
-        // todo - add the subscription plan to the cart!
+        /** @var SubscriptionHelper $subcriptionHelper */
+        $subcriptionHelper = $this->get('subscription_helper');
+        $plan = $subcriptionHelper->findPlan($planId);
+
+        if (!$plan){
+           throw $this->createNotFoundException("Bad Plan id!");
+        }
+
+        $this->get('shopping_cart')->addSubscription($planId);
+
+        return $this->redirectToRoute('order_checkout');
     }
 
     /**
@@ -74,15 +87,22 @@ class OrderController extends BaseController
      */
     private function chargeCustomer($token)
     {
+        /** @var StripeClient $stripeClient */
         $stripeClient = $this->get('stripe_client');
+        /** @var SubscriptionHelper $subcriptionHelper */
+        $subcriptionHelper = $this->get('subscription_helper');
+
         /** @var User $user */
         $user = $this->getUser();
         if (!$user->getStripeCustomerId()) {
-            $stripeClient->createCustomer($user, $token);
+            $stripeCustomer = $stripeClient->createCustomer($user, $token);
         } else {
-            $stripeClient->updateCustomerCard($user, $token);
+            $stripeCustomer = $stripeClient->updateCustomerCard($user, $token);
         }
 
+        $subcriptionHelper->updateCardDetails($user, $stripeCustomer);
+
+        /** @var ShoppingCart $cart */
         $cart = $this->get('shopping_cart');
 
         foreach ($cart->getProducts() as $product) {
@@ -92,7 +112,17 @@ class OrderController extends BaseController
                 $product->getName()
             );
         }
-        $stripeClient->createInvoice($user, true);
+
+        if ($cart->getSubscriptionPlan()) {
+            $subscription = $stripeClient->createSubscription(
+                $user,
+                $cart->getSubscriptionPlan()
+            );
+
+            $subcriptionHelper->addSubscriptionToUser($subscription, $user);
+        } else {
+            $stripeClient->createInvoice($user, true);
+        }
     }
 }
 
