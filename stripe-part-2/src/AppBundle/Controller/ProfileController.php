@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Stripe\Exception\ApiErrorException;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -76,6 +77,28 @@ class ProfileController extends BaseController
         $subscriptionHelper->addSubscriptionToUser($subscription, $this->getUser());
 
         $this->addFlash('success', 'Welcome back!');
+        return $this->redirectToRoute('profile_account');
+    }
+
+    /**
+     * @Route("/profile/card/update", name="account_update_credit_card")
+     * @Method({"POST"})
+     */
+    public function updateCreditCardAction(Request $request)
+    {
+        $token = $request->request->get('stripeToken');
+        $user = $this->getUser();
+
+        /** @var StripeClient $stripeClient */
+        $stripeClient = $this->get('stripe_client');
+        $stripeCustomer = $stripeClient->updateCustomerCard($user, $token);
+
+        /** @var SubscriptionHelper $subscriptionHelper */
+        $subscriptionHelper = $this->get('subscription_helper');
+
+        $subscriptionHelper->updateCardDetails($user, $stripeCustomer);
+        $this->addFlash('success', 'Card Updated');
+
         return $this->redirectToRoute('profile_account');
     }
 
