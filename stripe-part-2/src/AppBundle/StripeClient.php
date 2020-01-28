@@ -96,7 +96,7 @@ class StripeClient
 
         // https://stripe.com/docs/api/subscriptions/object#subscription_object-status
         $currentPeriodEnd = new \DateTime('@'.$subscription->current_period_end);
-        // within 1 hour of the end? Cancel so the invoice isn't charged
+        // within 1 hour of the end? Cancel, so the invoice isn't charged
         if ($subscription->status === Subscription::UNABLE_TO_CHARGE_CARD || $currentPeriodEnd < new \DateTime('+1 hour')) {
             $subscription->cancel();
             return $subscription;

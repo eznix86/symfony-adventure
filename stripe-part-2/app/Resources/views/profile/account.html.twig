@@ -1,5 +1,16 @@
 {% extends 'base.html.twig' %}
-
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            $('.js-open-credit-card-form').on('click', function(e) {
+                e.preventDefault();
+                $('.js-update-card-wrapper').slideToggle();
+            });
+        });
+    </script>
+    {{ include('order/_creditCardFormJavascript.html.twig') }}
+{% endblock %}
 {% block body %}
 <div class="nav-space">
     <div class="container">
@@ -72,9 +83,11 @@
                 </table>
             </div>
             <div class="col-xs-6">
-                <div class="js-update-card-wrapper" style="display: none;">
+                <div class="js-update-card-wrapper">
                     <h2>Update Credit Card</h2>
-
+                    {{ include('order/_cardForm.html.twig', {
+                        buttonText: 'Update Card'
+                    }) }}
                 </div>
         </div>
     </div>
