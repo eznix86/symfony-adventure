@@ -89,9 +89,14 @@ class ProfileController extends BaseController
         $token = $request->request->get('stripeToken');
         $user = $this->getUser();
 
-        /** @var StripeClient $stripeClient */
-        $stripeClient = $this->get('stripe_client');
-        $stripeCustomer = $stripeClient->updateCustomerCard($user, $token);
+        try {
+            /** @var StripeClient $stripeClient */
+            $stripeClient = $this->get('stripe_client');
+            $stripeCustomer = $stripeClient->updateCustomerCard($user, $token);
+        }catch (\Exception $exception) {
+            $this->addFlash('error', 'There was a problem charging your card: '.$exception->getMessage());
+            return $this->redirectToRoute('profile_account');
+        }
 
         /** @var SubscriptionHelper $subscriptionHelper */
         $subscriptionHelper = $this->get('subscription_helper');
