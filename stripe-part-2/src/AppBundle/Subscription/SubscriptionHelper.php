@@ -73,4 +73,16 @@ class SubscriptionHelper
         $this->em->persist($user);
         $this->em->flush($user);
     }
+
+    /**
+     * @param Subscription $subscription
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function fullyCancelSubscription(Subscription $subscription)
+    {
+        $subscription->cancel();
+        $this->em->persist($subscription);
+        $this->em->flush($subscription);
+    }
 }
