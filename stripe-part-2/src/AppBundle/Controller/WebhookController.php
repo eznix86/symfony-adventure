@@ -33,7 +33,13 @@ class WebhookController extends BaseController
         /** @var StripeClient $stripeClient */
         $stripeClient = $this->get('stripe_client');
 
-        $stripeEvent = $stripeClient->findEvent($eventId);
+        if ($this->getParameter('verify_stripe_event')) {
+            $stripeEvent = $stripeClient
+                ->findEvent($eventId);
+        } else {
+            // fake the Stripe_Event in the test environment
+            $stripeEvent = json_decode($request->getContent());
+        }
 
         switch ($stripeEvent->type) {
             case 'customer.subscription.deleted':
@@ -56,7 +62,7 @@ class WebhookController extends BaseController
 
     private function findSubscription($subscriptionId)
     {
-        $subscription = $this->getDoctrine()->getRepository(SubscriptionHelper::class)
+        $subscription = $this->getDoctrine()->getRepository(Subscription::class)
                     ->findOneBy(
                         ["stripeSubscriptionId" => $subscriptionId]
                     );
