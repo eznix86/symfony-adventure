@@ -44,8 +44,6 @@ class WebhookControllerTest extends WebTestCase
             $eventJson
         );
 
-        dump($client->getResponse()->getContent());
-
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         $subscription = $this->em
